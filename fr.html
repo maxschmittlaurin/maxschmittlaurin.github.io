@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+        <meta name="description" content="" />
+        <meta name="author" content="" />
+        <title>Pickle Rick CTF - Walkthrough</title>
+        <!-- Favicon-->
+        <link rel="icon" type="image/x-icon" href="assets/favicon.ico" />
+        <!-- Core theme CSS (includes Bootstrap)-->
+        <link href="css/styles.css" rel="stylesheet" />
+    </head>
+    <body>
+        <!-- Responsive navbar-->
+        <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+            <div class="container">
+                <a class="navbar-brand" href="#!">Pickle Rick CTF</a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation"><span class="navbar-toggler-icon"></span></button>
+                <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                    <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+                        <li class="nav-item"><a class="nav-link" href="index.html">En</a></li>
+                        <li class="nav-item"><a class="nav-link active" aria-current="page" href="fr.html">Fr</a></li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+        <!-- Page content-->
+        <div class="container mt-5">
+            <div class="row">
+                <div class="col-lg-12">
+                    <!-- Post content-->
+                    <article>
+                        <!-- Post header-->
+                        <header class="mb-4">
+                            <!-- Post title-->
+                            <h1 class="fw-bolder mb-1">Solutionnaire pour le CTF « Pickle Rick »</h1>
+                            <!-- Post meta content-->
+                            <div class="text-muted fst-italic mb-2" style="margin-top: 20px;">Publié le 3 mars 2022 par Maximilien Schmitt-Laurin</div>
+                            <!-- Post categories-->
+                            <a class="badge bg-secondary text-decoration-none link-light" href="#!">CTF</a>
+                            <a class="badge bg-secondary text-decoration-none link-light" href="#!">Pentesting</a>
+                            <a class="badge bg-secondary text-decoration-none link-light" href="#!">TryHackMe</a>
+                        </header>
+                        <!-- Preview image figure-->
+                        <figure class="mb-4"><img class="img-fluid rounded" src="assets/rick.PNG" alt="..." /></figure>
+                        <!-- Post content-->
+                        <section class="mb-5" style="margin-top: 40px;">
+                            <p class="fs-5 mb-4">Ce défi sur le thème de Rick et Morty nous demande d'exploiter un serveur web pour trouver 3 ingrédients (ou drapeaux) qui aideront Rick à préparer sa potion pour se retransformer en humain à partir d'un cornichon.</p>
+                            <p class="fs-5 mb-4">Lien du défi : <a href="https://tryhackme.com/room/picklerick">https://tryhackme.com/room/picklerick</a></p>
+                            <h2 class="fw-bolder mb-4 mt-5">Le premier drapeau</h2>
+                            <p class="fs-5 mb-4">Tout d'abord, commençons par déployer la machine virtuelle à attaquer. Pour ce défi, l'adresse IP qui m'a été fournie pour la machine virtuelle est : 10.10.120.45</p>
+                            <p class="fs-5 mb-4">Une fois l'adresse IP obtenue, nous pouvons par la suite taper l'adresse IP dans la barre de recherche d'un fureteur web afin d'effectuer une requête GET au serveur web et ainsi obtenir une page web en retour. Le fureteur web que je vais utiliser
+                                pour ce défi sera Mozilla Firefox. La page web qui nous sera retournée en réponse par le serveur web est la suivante :
+                            </p>
+                            <figure class="mb-4"><img class="img-fluid rounded" src="assets/image1.PNG" alt="..." /></figure>
+                            <p class="fs-5 mb-4">Un des premiers réflexes que nous devrions avoir serait d'inspecter le code source de la page web afin de trouver un indice. Justement, nous pouvons y retrouver le
+                                commentaire suivant qui a été laissé accidentellement : "Note to self, remember username ! Username: R1ckRul3s".
+                            </p>
+                            <figure class="mb-4"><img class="img-fluid rounded" src="assets/image2.PNG" alt="..." /></figure>
+                            <p class="fs-5 mb-4">Par la suite, nous devons trouver d'autres indices. Comme il n'y a aucun hyperlien ou bouton sur la page web qui nous permettrait de nous diriger vers une autre page,
+                                nous devons donc tenter de trouver plus de ressources sur le serveur web, car autrement nous sommes limités en indices.
+                            </p>
+                            <p class="fs-5 mb-4">Une chance pour nous, il existe un excellent outil nommé Gobuster qui peut nous permettre d'identifier des répertoires et des fichiers présents sur le serveur web. Pour utiliser
+                                cet outil de manière à répondre à nos besoins, nous devons fournir l'adresse IP du serveur web ainsi qu'un fichier .txt contenant une liste de mots. La liste de mots que nous allons utiliser est
+                                la suivante :
+                            </p>
+                            <p class="fs-5 mb-4"><a href="https://github.com/danielmiessler/SecLists/blob/master/Discovery/Web-Content/common.txt">https://github.com/danielmiessler/SecLists/blob/master/Discovery/Web-Content/common.txt</a>
+                            </p>
+                            <p class="fs-5 mb-4">Ouvrons le terminal. Pour utiliser Gobuster afin d'identifier des répertoires et fichiers présents sur le serveur web, nous devons taper une commande sous la forme suivante :
+                            </p>
+                            <p class="fs-5 mb-4">gobuster dir -u MACHINE_IP -w WORD_LIST
+                            </p>
+                            <p class="fs-5 mb-4">Dans notre cas, MACHINE_IP sera l'adresse IP du serveur web (10.10.120.45 pour moi) et WORD_LIST sera notre fichier common.txt.
+                            </p>
+                            <figure class="mb-4"><img class="img-fluid rounded" src="assets/image3.PNG" alt="..." /></figure>
+                            <figure class="mb-4"><img class="img-fluid rounded" src="assets/image4.PNG" alt="..." /></figure>
+                            <p class="fs-5 mb-4">Une fois que Gobuster a fini d'appliquer sa magie, nous pouvons remarquer un fichier robots.txt qui suscite notre intérêt. Nous accédons donc à cette ressource sur
+                                le serveur web et nous trouvons une chaîne de caractères intéressante.
+                            </p>
+                            <figure class="mb-4"><img class="img-fluid rounded" src="assets/image5.PNG" alt="..." /></figure>
+                            <p class="fs-5 mb-4">
+                                Cool ! Cette chaîne est peut-être un mot de passe. Après tout, nous avions trouvé précédemment un username au tout début du défi. Pourquoi ne pas essayer de se connecter via SSH ? Commençons par 
+                                identifier en premier les ports ouverts sur le serveur web avec le scanner de ports Nmap.
+                            </p>
+                            <figure class="mb-4"><img class="img-fluid rounded" src="assets/image6.PNG" alt="..." /></figure>
+                            <figure class="mb-4"><img class="img-fluid rounded" src="assets/image7.PNG" alt="..." /></figure>
+                            <p class="fs-5 mb-4">
+                                Nous pouvons nous apercevoir que le port 22 est ouvert et qu'il accepte des connections via SSH. Parfait ! Nous pouvons donc essayer de nous connecter via SSH au serveur web avec le username trouvé au tout début
+                                du défi (R1ckRul3s) et avec la chaîne de caractères trouvée dans le fichier robots.txt (Wubbalubbadubdub) comme mot de passe. Cependant nous allons rencontrer un problème.
+                            </p>
+                            <figure class="mb-4"><img class="img-fluid rounded" src="assets/image8.PNG" alt="..." /></figure>
+                            <p class="fs-5 mb-4">
+                                Malheureusement, la permission de se connecter nous a été refusée. Par contre, nous n'abandonnons pas. Si vous vous rappelez bien, nous 
+                                attaquons un serveur web et parmi les ports énumérés par Nmap lors du balayage de ports, le port 80 était ouvert et acceptait des connections.
+                                Pourquoi ne pas utiliser un outil comme Nikto pour scanner des vulnérabilités sur le serveur web ? Nous pouvons donc utiliser la commande
+                                suivante :
+                            </p>
+                            <p class="fs-5 mb-4">
+                                nikto -h http://MACHINE_IP -o scan.txt
+                            </p>
+                            <figure class="mb-4"><img class="img-fluid rounded" src="assets/image9.PNG" alt="..." /></figure>
+                            <p class="fs-5 mb-4">
+                                Une fois la commande exécutée et le scan fini, nous pouvons aller voir le résultat dans scan.txt. Nous y retrouverons ceci :
+                            </p>
+                            <p class="fs-5 mb-4">
+                                - Nikto v2.1.6/2.1.5 <br>
+                                + Target Host: 10.10.20.45 <br>
+                                + Target Port: 80<br>
+                                + GET The anti-clickjacking X-Frame-Options header is not present.<br>
+                                + GET The X-XSS-Protection header is not defined. This header can hint to the user agent to protect against some forms of XSS<br>
+                                + GET The X-Content-Type-Options header is not set. This could allow the user agent to render the content of the site in a different fashion to the MIME type<br>
+                                + HEAD Apache/2.4.18 appears to be outdated (current is at least Apache/2.4.37). Apache 2.2.34 is the EOL for the 2.x branch.<br>
+                                + GET Server may leak inodes via ETags, header found with file /, inode: 426, size: 5818ccf125686, mtime: gzip<br>
+                                + OPTIONS Allowed HTTP Methods: OPTIONS, GET, HEAD, POST<br>
+                                + GET Cookie PHPSESSID created without the httponly flag<br>
+                                + OSVDB-3233: GET /icons/README: Apache default file found.<br>
+                                + GET /login.php: Admin login page/section found.<br>
+                            </p>
+                            <p class="fs-5 mb-4">
+                                Génial ! Il semblerait que notre scan ait découvert une page /login.php sur le serveur web. Rendons-nous vers cette page web.
+                            </p>
+                            <figure class="mb-4"><img class="img-fluid rounded" src="assets/image10.PNG" alt="..." /></figure>
+                            <p class="fs-5 mb-4">
+                                Essayons maintenant de se connecter avec le username R1ckRul3s et le mot de passe Wubbalubbadubdub. Incroyable ! Ça marche !  Nous arrivons
+                                maintenant sur une nouvelle page web. 
+                            </p>
+                            <figure class="mb-4"><img class="img-fluid rounded" src="assets/image11.PNG" alt="..." /></figure>
+                            <p class="fs-5 mb-4">
+                                Sur cette page web, nous pouvons remarquer un champ qui semblerait prendre en entrée des commandes pouvant être exécutées sur le serveur web. Pourquoi ne pas en profiter pour énumérer des fichiers et répertoires qui se retrouvent
+                                sur le serveur web ? Je propose de fournir en entrée la commande suivante pour y arriver :
+                            </p>
+                            <figure class="mb-4"><img class="img-fluid rounded" src="assets/image12.PNG" alt="..." /></figure>
+                            <p class="fs-5 mb-4">
+                                Dans les résultats qui nous sont présentés à l'écran, il y a le fichier Sup3rS3cretPickl3Ingred.txt qui devrait nous intéresser.
+                            </p>
+                            <figure class="mb-4"><img class="img-fluid rounded" src="assets/image13.PNG" alt="..." /></figure>
+                            <p class="fs-5 mb-4">
+                                Évidemment, notre première intuition serait de lire le contenu de ce fichier avec la commande 'cat Sup3rS3cretPickl3Ingred.txt'. Cependant, cette commande ne semble pas être permise.
+                            </p>
+                            <figure class="mb-4"><img class="img-fluid rounded" src="assets/image14.PNG" alt="..." /></figure>
+                            <p class="fs-5 mb-4">
+                                Ok. Essayons donc une autre commande comme 'less Sup3rS3cretPickl3Ingred.txt'.
+                            </p>
+                            <figure class="mb-4"><img class="img-fluid rounded" src="assets/image15.PNG" alt="..." /></figure>
+                            <p class="fs-5 mb-4">
+                                Super ! Nous venons de trouver notre premier drapeau !
+                            </p>
+                            <h2 class="fw-bolder mb-4 mt-5">Le deuxième drapeau</h2>
+                            <p class="fs-5 mb-4"> 
+                                Parmi les fichiers/répertoires que nous avons énumérés précédemment, il y avait un fichier nommé clue.txt. Nous pouvons effecuer la commande
+                                'less clue.txt' pour lire le contenu du fichier. 
+                            </p>
+                            <figure class="mb-4"><img class="img-fluid rounded" src="assets/image16.PNG" alt="..." /></figure>
+                            <p class="fs-5 mb-4"> 
+                                Cool ! Dans ce cas, nous allons explorer plusieurs répertoires sur le serveur web jusqu'à ce que nous trouvons quelque chose qui pourrait
+                                susciter notre intérêt. Justement, c'est lorsque nous nous retrouvons dans le répertoire /home/ que les choses deviennent intéressantes.
+                            </p>
+                            <figure class="mb-4"><img class="img-fluid rounded" src="assets/image17.PNG" alt="..." /></figure>
+                            <p class="fs-5 mb-4"> 
+                                Allons voir dans le répertoire /home/rick. Intéressant... Nous pouvons voir un fichier 'second ingredients'.
+                            </p>
+                            <figure class="mb-4"><img class="img-fluid rounded" src="assets/image18.PNG" alt="..." /></figure>
+                            <p class="fs-5 mb-4"> 
+                                Lisons le contenu avec 'less /home/rick/"second ingredients" '
+                            </p>
+                            <figure class="mb-4"><img class="img-fluid rounded" src="assets/image19.PNG" alt="..." /></figure>
+                            <p class="fs-5 mb-4"> 
+                                Super ! Notre deuxième drapeau !
+                            </p>
+                            <h2 class="fw-bolder mb-4 mt-5">Le troisième drapeau</h2>
+                            <p class="fs-5 mb-4"> 
+                                Dans la section précédente, vous avez probablement remarqué /root en explorant les divers répertoires sur le serveur web.
+                            </p>
+                            <figure class="mb-4"><img class="img-fluid rounded" src="assets/image20.PNG" alt="..." /></figure>
+                            <p class="fs-5 mb-4"> 
+                                Tout d'abord, vérifions la permission de l'utilisateur en tapant 'sudo -l'.
+                            </p>
+                            <figure class="mb-4"><img class="img-fluid rounded" src="assets/image21.PNG" alt="..." /></figure>
+                            <p class="fs-5 mb-4"> 
+                                Wow ! Nous avons aucune restriction et nous pouvons exécuter des commandes en tant que sudo. Tentons d'énumérer les fichiers et répertoires dans /root avec
+                                'sudo ls /root'.
+                            </p>
+                            <figure class="mb-4"><img class="img-fluid rounded" src="assets/image22.PNG" alt="..." /></figure>
+                            <p class="fs-5 mb-4"> 
+                                Nous avons deux fichiers qui s'affichent. 3rd.txt est celui qui devrait nous intéresser. Il nous reste plus qu'à lire son contenu avec 'sudo less /root/3rd.txt'.
+                            </p>
+                            <figure class="mb-4"><img class="img-fluid rounded" src="assets/image23.PNG" alt="..." /></figure>
+                            <p class="fs-5 mb-4"> 
+                                Voilà notre dernier drapeau !
+                            </p>
+                        </section>
+                    </article>
+                </div>
+            </div>
+        </div>
+        <!-- Footer-->
+        <footer class="py-5 bg-dark">
+            <div class="container"><p class="m-0 text-center text-white">Copyright &copy; 2022 Maximilien Schmitt-Laurin. All Rights Reserved.</p></div>
+        </footer>
+        <!-- Bootstrap core JS-->
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+        <!-- Core theme JS-->
+        <script src="js/scripts.js"></script>
+    </body>
+</html>

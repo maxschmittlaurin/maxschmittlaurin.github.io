@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+        <meta name="description" content="" />
+        <meta name="author" content="" />
+        <title>Pickle Rick CTF - Walkthrough</title>
+        <!-- Favicon-->
+        <link rel="icon" type="image/x-icon" href="assets/favicon.ico" />
+        <!-- Core theme CSS (includes Bootstrap)-->
+        <link href="css/styles.css" rel="stylesheet" />
+    </head>
+    <body>
+        <!-- Responsive navbar-->
+        <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+            <div class="container">
+                <a class="navbar-brand" href="#!">Pickle Rick CTF</a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation"><span class="navbar-toggler-icon"></span></button>
+                <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                    <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+                        <li class="nav-item"><a class="nav-link active" href="index.html">En</a></li>
+                        <li class="nav-item"><a class="nav-link" aria-current="page" href="fr.html">Fr</a></li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+        <!-- Page content-->
+        <div class="container mt-5">
+            <div class="row">
+                <div class="col-lg-12">
+                    <!-- Post content-->
+                    <article>
+                        <!-- Post header-->
+                        <header class="mb-4">
+                            <!-- Post title-->
+                            <h1 class="fw-bolder mb-1">Pickle Rick CTF Walkthrough</h1>
+                            <!-- Post meta content-->
+                            <div class="text-muted fst-italic mb-2" style="margin-top: 20px;">Published on March 3, 2022 by Maximilien Schmitt-Laurin</div>
+                            <!-- Post categories-->
+                            <a class="badge bg-secondary text-decoration-none link-light" href="#!">CTF</a>
+                            <a class="badge bg-secondary text-decoration-none link-light" href="#!">Pentesting</a>
+                            <a class="badge bg-secondary text-decoration-none link-light" href="#!">TryHackMe</a>
+                        </header>
+                        <!-- Preview image figure-->
+                        <figure class="mb-4"><img class="img-fluid rounded" src="assets/rick.PNG" alt="..." /></figure>
+                        <!-- Post content-->
+                        <section class="mb-5" style="margin-top: 40px;">
+                            <p class="fs-5 mb-4">This Rick and Morty themed challenge requires you to exploit a webserver to find 3 ingredients that will help Rick make his potion to transform himself back into a human from a pickle.</p>
+                            <p class="fs-5 mb-4">Link to the challenge : <a href="https://tryhackme.com/room/picklerick">https://tryhackme.com/room/picklerick</a></p>
+                            <h2 class="fw-bolder mb-4 mt-5">The first flag</h2>
+                            <p class="fs-5 mb-4">First, let's start by deploying the virtual machine to be attacked. For this challenge, the IP address that was provided to me for the virtual machine is : 10.10.120.45</p>
+                            <p class="fs-5 mb-4">Once the IP address is obtained, we can then type the server's IP address in the search bar of a web browser to make a GET request and get a web page in return. The web page that will be returned to us in response by the web server is the following :
+                            </p>
+                            <figure class="mb-4"><img class="img-fluid rounded" src="assets/image1.PNG" alt="..." /></figure>
+                            <p class="fs-5 mb-4">One of the first reflexes we should have is to inspect the source code of the web page to find a clue. In fact, we can find the following comment that was accidentally left there: "Note to self, remember username ! Username: R1ckRul3s".
+                            </p>
+                            <figure class="mb-4"><img class="img-fluid rounded" src="assets/image2.PNG" alt="..." /></figure>
+                            <p class="fs-5 mb-4">Then, we have to find other clues. Since there is no hyperlink or button on the web page that allow us to go to another page, we have to find more resources on the web server, because otherwise we are limited in clues.
+                            </p>
+                            <p class="fs-5 mb-4">Lucky for us, there is an excellent tool called Gobuster that can help us identify directories and files on the web server. In order to fulfill our needs with this tool, we need to provide the IP address of the web server and a .txt file containing a list of words. The list of words that we will use is the following one:
+                            </p>
+                            <p class="fs-5 mb-4"><a href="https://github.com/danielmiessler/SecLists/blob/master/Discovery/Web-Content/common.txt">https://github.com/danielmiessler/SecLists/blob/master/Discovery/Web-Content/common.txt</a>
+                            </p>
+                            <p class="fs-5 mb-4">Let's open the terminal. To use Gobuster to identify directories and files on the web server, we need to type a command in the following form :</p>
+                            <p class="fs-5 mb-4">gobuster dir -u MACHINE_IP -w WORD_LIST
+                            </p>
+                            <p class="fs-5 mb-4">In our case, MACHINE_IP will be the IP address of the web server (10.10.120.45 in my case) and WORD_LIST will be our downloaded common.txt file.
+                            </p>
+                            <figure class="mb-4"><img class="img-fluid rounded" src="assets/image3.PNG" alt="..." /></figure>
+                            <figure class="mb-4"><img class="img-fluid rounded" src="assets/image4.PNG" alt="..." /></figure>
+                            <p class="fs-5 mb-4">Once Gobuster has finished applying its magic, we can notice a robots.txt file that piques our interest. We retrieve this resource on the web server and suddenly we find an interesting string.
+                            </p>
+                            <figure class="mb-4"><img class="img-fluid rounded" src="assets/image5.PNG" alt="..." /></figure>
+                            <p class="fs-5 mb-4">
+                                Cool! Maybe this string is a password. After all, we had previously found a username at the very beginning of the challenge. Why not try to connect via SSH? Let's start by identifying the open ports on the web server with the Nmap port scanner.
+                            </p>
+                            <figure class="mb-4"><img class="img-fluid rounded" src="assets/image6.PNG" alt="..." /></figure>
+                            <figure class="mb-4"><img class="img-fluid rounded" src="assets/image7.PNG" alt="..." /></figure>
+                            <p class="fs-5 mb-4">
+                                We can see that port 22 is open and accepting connections via SSH. That's great! We can try to connect to the web server via SSH with the username found at the very beginning of the challenge (R1ckRul3s) and with the string found in the robots.txt file (Wubbalubbadubdub) as the password. However we will encounter a problem.
+                            </p>
+                            <figure class="mb-4"><img class="img-fluid rounded" src="assets/image8.PNG" alt="..." /></figure>
+                            <p class="fs-5 mb-4">
+                                Unfortunately, we were denied permission to connect. However, we don't give up. If you recall, we are attacking a web server and among the ports listed by Nmap during the port scan, port 80 was open and accepting connections. Why not use a tool like Nikto to scan for vulnerabilities on the web server? We can use the following command :
+                            </p>
+                            <p class="fs-5 mb-4">
+                                nikto -h http://MACHINE_IP -o scan.txt
+                            </p>
+                            <figure class="mb-4"><img class="img-fluid rounded" src="assets/image9.PNG" alt="..." /></figure>
+                            <p class="fs-5 mb-4">
+                                Once the command is executed and the scan is finished, we can go and see the result in scan.txt. There we will find this:
+                            </p>
+                            <p class="fs-5 mb-4">
+                                - Nikto v2.1.6/2.1.5 <br>
+                                + Target Host: 10.10.20.45 <br>
+                                + Target Port: 80<br>
+                                + GET The anti-clickjacking X-Frame-Options header is not present.<br>
+                                + GET The X-XSS-Protection header is not defined. This header can hint to the user agent to protect against some forms of XSS<br>
+                                + GET The X-Content-Type-Options header is not set. This could allow the user agent to render the content of the site in a different fashion to the MIME type<br>
+                                + HEAD Apache/2.4.18 appears to be outdated (current is at least Apache/2.4.37). Apache 2.2.34 is the EOL for the 2.x branch.<br>
+                                + GET Server may leak inodes via ETags, header found with file /, inode: 426, size: 5818ccf125686, mtime: gzip<br>
+                                + OPTIONS Allowed HTTP Methods: OPTIONS, GET, HEAD, POST<br>
+                                + GET Cookie PHPSESSID created without the httponly flag<br>
+                                + OSVDB-3233: GET /icons/README: Apache default file found.<br>
+                                + GET /login.php: Admin login page/section found.<br>
+                            </p>
+                            <p class="fs-5 mb-4">
+                                Great! It seems that our scan has discovered a /login.php page on the web server. Let's access this page.
+                            </p>
+                            <figure class="mb-4"><img class="img-fluid rounded" src="assets/image10.PNG" alt="..." /></figure>
+                            <p class="fs-5 mb-4">
+                                Now let's try to connect with the username R1ckRul3s and the password Wubbalubbadubdub. Unbelievable! It works! Now we obtain a new web page. 
+                            </p>
+                            <figure class="mb-4"><img class="img-fluid rounded" src="assets/image11.PNG" alt="..." /></figure>
+                            <p class="fs-5 mb-4">
+                                On this web page, we can notice an input field that seems to take in entry commands that can be executed on the web server. Why not take the opportunity to list files and directories that are on the web server? Let's use the following command to achieve this:
+                            </p>
+                            <figure class="mb-4"><img class="img-fluid rounded" src="assets/image12.PNG" alt="..." /></figure>
+                            <p class="fs-5 mb-4">
+                                In the results presented to us on the screen, there is Sup3rS3cretPickl3Ingred.txt that should interest us.
+                            </p>
+                            <figure class="mb-4"><img class="img-fluid rounded" src="assets/image13.PNG" alt="..." /></figure>
+                            <p class="fs-5 mb-4">
+                                Obviously, our first intuition would be to read this file's content with the command 'cat Sup3rS3cretPickl3Ingred.txt'. However, this command does not seem to be allowed.
+                            </p>
+                            <figure class="mb-4"><img class="img-fluid rounded" src="assets/image14.PNG" alt="..." /></figure>
+                            <p class="fs-5 mb-4">
+                                Ok. Let's try another command like 'less Sup3rS3cretPickl3Ingred.txt'.
+                            </p>
+                            <figure class="mb-4"><img class="img-fluid rounded" src="assets/image15.PNG" alt="..." /></figure>
+                            <p class="fs-5 mb-4">
+                                Great! We just found our first flag!
+                            </p>
+                            <h2 class="fw-bolder mb-4 mt-5">The second flag</h2>
+                            <p class="fs-5 mb-4"> 
+                                Among the files/directories we listed earlier, there was a file named clue.txt. We can use the command 'less clue.txt' to read this file's content. 
+                            </p>
+                            <figure class="mb-4"><img class="img-fluid rounded" src="assets/image16.PNG" alt="..." /></figure>
+                            <p class="fs-5 mb-4"> 
+                                Cool! In this case, we will explore several directories on the web server until we find something that might interest us. It is precisely when we find ourselves in the /home/ directory that things get interesting.
+                            </p>
+                            <figure class="mb-4"><img class="img-fluid rounded" src="assets/image17.PNG" alt="..." /></figure>
+                            <p class="fs-5 mb-4"> 
+                                Let's look in the /home/rick directory. Interesting... We can see a file named 'second ingredients'.
+                            </p>
+                            <figure class="mb-4"><img class="img-fluid rounded" src="assets/image18.PNG" alt="..." /></figure>
+                            <p class="fs-5 mb-4"> 
+                                Let's read its content with 'less /home/rick/"second ingredients" '
+                            </p>
+                            <figure class="mb-4"><img class="img-fluid rounded" src="assets/image19.PNG" alt="..." /></figure>
+                            <p class="fs-5 mb-4"> 
+                                Amazing ! Our second flag !
+                            </p>
+                            <h2 class="fw-bolder mb-4 mt-5">The third flag</h2>
+                            <p class="fs-5 mb-4"> 
+                                In the previous section, you probably noticed /root while exploring the various directories on the web server.
+                            </p>
+                            <figure class="mb-4"><img class="img-fluid rounded" src="assets/image20.PNG" alt="..." /></figure>
+                            <p class="fs-5 mb-4"> 
+                                First, let's check the user's permission by typing 'sudo -l'.
+                            </p>
+                            <figure class="mb-4"><img class="img-fluid rounded" src="assets/image21.PNG" alt="..." /></figure>
+                            <p class="fs-5 mb-4"> 
+                                Wow! We have no restrictions and we can run commands as sudo. Let's try to list the files and directories in /root with 'sudo ls /root'.
+                            </p>
+                            <figure class="mb-4"><img class="img-fluid rounded" src="assets/image22.PNG" alt="..." /></figure>
+                            <p class="fs-5 mb-4"> 
+                                We have two files that are listed. 3rd.txt is the one that should interest us. We just have to read its content with 'sudo less /root/3rd.txt'.
+                            </p>
+                            <figure class="mb-4"><img class="img-fluid rounded" src="assets/image23.PNG" alt="..." /></figure>
+                            <p class="fs-5 mb-4"> 
+                                Here is our last flag!
+                            </p>
+                        </section>
+                    </article>
+                </div>
+            </div>
+        </div>
+        <!-- Footer-->
+        <footer class="py-5 bg-dark">
+            <div class="container"><p class="m-0 text-center text-white">Copyright &copy; 2022 Maximilien Schmitt-Laurin. All Rights Reserved.</p></div>
+        </footer>
+        <!-- Bootstrap core JS-->
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+        <!-- Core theme JS-->
+        <script src="js/scripts.js"></script>
+    </body>
+</html>
